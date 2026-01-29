@@ -6,12 +6,13 @@ if project_root not in sys.path:
         
 import cv2
 # from rtmlib.rtmlib import PoseTracker, Wholebody3d, draw_skeleton
-from RTMPose.rtmlib import PoseTracker, Wholebody3d, draw_skeleton
+
 import torch
 import numpy as np
 from Tools.Gen_dataset.model_config import model_configs
 
 def Keypoint_Extract(path_to_video, image_width=1920, image_height=1080):
+    from RTMPose.rtmlib import PoseTracker, Wholebody3d, draw_skeleton
     """
     Extract keypoint information from all frames in video, normalize and return tensor
     

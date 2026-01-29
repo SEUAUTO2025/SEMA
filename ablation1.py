@@ -1,6 +1,6 @@
 """
 Batch generate evaluation texts for all samples (with biomechanical features)
-Add new column to existing blind_evaluation.csv: Evaluation SEAM_RTMPOSE
+Add new column to existing blind_evaluation.csv: Evaluation SEMA_RTMPOSE
 Calculate MAE and save to txt file
 """
 import sys, os
@@ -22,17 +22,17 @@ from tqdm import tqdm
 from RTMPose.Bone_Feature_Extract import Keypoint_Extract, cal_math_features, extract_action_features
 from RAG.tokenize_search import Tokenize_SearchKeyword
 from RAG.Knowledge_Database.RAGFunc import get_response_ali
-from Tools.Gen_dataset.create_dummy_dataset import load_single_csv_with_multipart_labels
+from Tools.Gen_dataset.dataset_exe import load_single_csv_with_multipart_labels
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-BASE_DIR = r"D:\pythonWorks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master\whole_dataset_txt!!!!!!!!"
+BASE_DIR = r"dataset"
 VIDEO_DIR = os.path.join(BASE_DIR, "video")
 TXT_DIR = os.path.join(BASE_DIR, "txt")
 CSV_DIR = os.path.join(BASE_DIR, "csv")
-INPUT_CSV = os.path.join(BASE_DIR, "blind_evaluation.csv")
-OUTPUT_CSV = os.path.join(BASE_DIR, "blind_evaluation.csv")
-MAE_TXT = os.path.join(BASE_DIR, "mae_statistics_SEAM_RTMPOSE.txt")
+INPUT_CSV = os.path.join('evaluation_set', "blind_evaluation.csv")
+OUTPUT_CSV = os.path.join('evaluation_set', "blind_evaluation_add.csv")
+MAE_TXT = os.path.join('evaluation_set', "mae_statistics_SEMA_RTMPOSE.txt")
 
 def get_matching_labels(video_name, csv_dir):
     """Get score labels based on video name"""
@@ -87,7 +87,7 @@ def process_single_video(video_path):
 
 def main():
     print("="*80)
-    print("Batch Generate Evaluation Texts (SEAM+RTMPOSE)")
+    print("Batch Generate Evaluation Texts (SEMA+RTMPOSE)")
     print("="*80)
     
     print(f"\nReading existing CSV file: {INPUT_CSV}")
@@ -150,7 +150,7 @@ def main():
     for row in existing_data:
         video_name = row['Video Name']
         result = video_to_result.get(video_name, {'pred_comment': ''})
-        row['Evaluation SEAM_RTMPOSE'] = result['pred_comment']
+        row['Evaluation SEMA_RTMPOSE'] = result['pred_comment']
     
     print(f"\nSaving updated CSV to: {OUTPUT_CSV}")
     with open(OUTPUT_CSV, 'w', encoding='utf-8-sig', newline='') as f:
@@ -159,10 +159,10 @@ def main():
         writer.writeheader()
         writer.writerows(existing_data)
     
-    print(f"✓ CSV file updated, new column added: Evaluation SEAM_RTMPOSE")
+    print(f"✓ CSV file updated, new column added: Evaluation SEMA_RTMPOSE")
     
     print("\n" + "="*80)
-    print("MAE Statistics (SEAM+RTMPOSE with biomechanical features)")
+    print("MAE Statistics (SEMA+RTMPOSE with biomechanical features)")
     print("="*80)
     
     mae_stats = {}
@@ -179,7 +179,7 @@ def main():
     print(f"\nSaving MAE statistics to: {MAE_TXT}")
     with open(MAE_TXT, 'w', encoding='utf-8') as f:
         f.write("="*80 + "\n")
-        f.write("MAE Statistics (SEAM+RTMPOSE with biomechanical features)\n")
+        f.write("MAE Statistics (SEMA+RTMPOSE with biomechanical features)\n")
         f.write("="*80 + "\n\n")
         f.write(f"Successfully processed samples: {len(mae_details)}\n")
         f.write(f"Total samples: {len(existing_data)}\n\n")
@@ -224,7 +224,7 @@ def main():
     print("Completed!")
     print("="*80)
     print(f"✓ Updated CSV: {OUTPUT_CSV}")
-    print(f"  - New column: Evaluation SEAM_RTMPOSE")
+    print(f"  - New column: Evaluation SEMA_RTMPOSE")
     print(f"✓ MAE statistics file: {MAE_TXT}")
     print(f"  - Contains average MAE and detailed information for each sample")
 

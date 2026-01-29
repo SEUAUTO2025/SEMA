@@ -15,7 +15,7 @@ import torch
 from RTMPose.Bone_Feature_Extract import *
 from RAG.tokenize_search import *
 from RAG.Knowledge_Database.RAGFunc import *
-from Tools.Gen_dataset.create_dummy_dataset import load_single_csv_with_multipart_labels
+from Tools.Gen_dataset.dataset_exe import load_single_csv_with_multipart_labels
 import json
 from DIR import project_root
 import nltk
@@ -29,9 +29,9 @@ from pycocoevalcap.cider.cider import Cider
 from deep_translator import DeeplTranslator
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-video_path = r"D:\pythonWorks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master\whole_dataset_txt!!!!!!!!\video\202511181420010_clip_1054.mp4"
-txt_path = r"D:\pythonWorks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master\whole_dataset_txt!!!!!!!!\txt_en"
-csv_path = r"D:\pythonWorks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master\whole_dataset_txt!!!!!!!!\csv"
+video_path = r""
+txt_path = r""
+csv_path = r""
 parts = ['head','hand','foot','arm','torso']
 
 gt_score_dict = {

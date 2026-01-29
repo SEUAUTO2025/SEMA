@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Automated evaluation of blind evaluation CSV comments
 Uses two AI models for scoring, generates two sets of results
@@ -20,7 +19,7 @@ import matplotlib
 matplotlib.rcParams['font.sans-serif'] = ['SimHei']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-BASE_DIR = r"D:\pythonWorks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master\whole_dataset_txt!!!!!!!!"
+BASE_DIR = r"evaluation_set"
 BLIND_CSV = os.path.join(BASE_DIR, "blind_evaluation.csv")
 ANSWER_CSV = os.path.join(BASE_DIR, "blind_evaluation_answer.csv")
 OUTPUT_CSV = os.path.join(BASE_DIR, "blind_evaluation_scores.csv")
@@ -66,6 +65,31 @@ Please score the 【Generated Evaluation】 on the following three dimensions (5
 **Important**: Output only JSON format scoring results, no other content. Format:
 {{"Accuracy": score, "Professionalism": score, "Practicality": score}}
 """
+
+#     prompt = f"""你是一位专业的射箭教练评审专家。现在有两段射箭姿态评价文本：
+
+# 【老师撰写的标准评价（满分基准）】：
+# {teacher_comment}
+
+# 【待评估的生成评价】：
+# {generated_comment}
+
+# 请根据以下三个维度对【待评估的生成评价】进行打分（5分制李克特量表，1分最低，5分最高，可以输出小数）：
+
+# 1. **准确度**：生成评价中的技术要点、动作描述是否准确无误，与标准评价的事实一致性如何？
+# 2. **专业度**：生成评价使用的术语、表达方式是否专业，是否体现出射箭领域的专业水准？
+# 3. **实用性**：生成评价对学员的指导价值如何，改进建议是否具体可操作？
+
+# **评分标准**：
+# - 5分：优秀，完全达到标准评价水平
+# - 4分：良好，大部分达到标准
+# - 3分：中等，基本达到标准但有明显不足
+# - 2分：较差，与标准差距较大
+# - 1分：很差，严重偏离标准
+
+# **重要**：请只输出JSON格式的评分结果，不要输出任何其他内容。格式如下：
+# {{"准确度": 分数, "专业度": 分数, "实用性": 分数}}
+# """
     
     try:
         response = client.chat.completions.create(
@@ -174,9 +198,9 @@ def main():
     
     print(f"\n【{MODEL_1} Scoring Statistics】")
     print(f"Accuracy - Mean: {np.mean(model1_accuracy):.2f}, Std: {np.std(model1_accuracy):.2f}")
-    print(f"专业度 - 均值: {np.mean(model1_professionalism):.2f}, 标准差: {np.std(model1_professionalism):.2f}")
-    print(f"实用性 - 均值: {np.mean(model1_practicality):.2f}, 标准差: {np.std(model1_practicality):.2f}")
-    print(f"总体平均分: {np.mean(model1_avg):.2f}")
+    print(f"Professionaism - Mean: {np.mean(model1_professionalism):.2f}, Std: {np.std(model1_professionalism):.2f}")
+    print(f"Utility - Mean: {np.mean(model1_practicality):.2f}, Std: {np.std(model1_practicality):.2f}")
+    print(f"Total Mean: {np.mean(model1_avg):.2f}")
     print(f"Professionalism - Mean: {np.mean(model1_professionalism):.2f}, Std: {np.std(model1_professionalism):.2f}")
     print(f"Practicality - Mean: {np.mean(model1_practicality):.2f}, Std: {np.std(model1_practicality):.2f}")
     print(f"Overall Average: {np.mean(model1_avg):.2f}")

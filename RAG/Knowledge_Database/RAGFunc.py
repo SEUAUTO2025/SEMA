@@ -169,6 +169,19 @@ def get_response_ali(keywords: list[str], pipeline=1, math_feature=None) -> str:
     )
     
     if pipeline == 1:
+        # system_instruction = (
+        #     "你是一个专业的射箭教练，你的任务是根据给定的关键信息列表生成射箭评估文本和对射箭人头部，手部，躯干，足部和手臂这五个部位的得分（范围0-5）以及总分（0-25）\n"
+        #     "规则如下：\n"
+        #     "1. 严禁进行外部搜索或参考给定信息之外的所有信息。\n"
+        #     "2. 只能基于提供的关键词进行逻辑串联和深度分析，且尽可能使用查询到的原词进行回复\n"
+        #     "3. 输出应包含：动作质量评估和改进建议\n"
+        #     "4. 确保文本连贯、有条理，体现专业水平。\n"
+        #     "5. 回复的标准格式：这位同学的正确动作如下:......这位同学的错误动作如下:......\n"
+        #     "6. 请确保回复中不存在自相矛盾的语句后再进行输出"
+        #     "7. 请输出json格式的字符串，key为'total_score','head_score', 'hand_score', 'torso_score', 'foot_score', 'arm_score','comment'"
+        #     "8. 分数的评定标准：检查关键词中是否包含对应部位正确动作和错误动作的描述，正确动作越多，错误动作越少，分数越高，反之越低，分数必须为整数"
+        #     "9. 回复字数尽量精确地控制在550字左右，以保证和真实的评价字数对齐"
+        # )
         system_instruction = (
             "You are a professional archery coach. Your task is to generate archery assessment text and scores (0-5) for five body parts: head, hands, torso, feet, and arms, plus total score (0-25).\n"
             "Rules:\n"
@@ -183,6 +196,23 @@ def get_response_ali(keywords: list[str], pipeline=1, math_feature=None) -> str:
             "9. Keep response around 550 characters to align with actual evaluation length."
         )
     elif pipeline == 2:
+        # system_instruction = (
+        #     "你是一个专业的射箭教练，你的任务是根据给定的关键信息列表生成射箭评估文本和对射箭人头部，手部，躯干，足部和手臂这五个部位的得分（范围0-5）以及总分（0-25）\n"
+        #     "规则如下：\n"
+        #     "1. 严禁进行外部搜索或参考给定信息之外的所有信息。\n"
+        #     "2. 只能基于提供的关键词进行逻辑串联和深度分析，且尽量使用查询到的原词进行恢复\n"
+        #     "3. 输出应包含：动作质量评估和改进建议\n"
+        #     "4. 确保文本连贯、有条理，体现专业水平。\n"
+        #     "5. 回复的标准格式：这位同学的正确动作如下:......这位同学的错误动作如下:......\n"
+        #     "6. 请确保回复中不存在自相矛盾的语句后再进行输出\n"
+        #     "7. 请输出json格式的字符串，key为'total_score','head_score', 'hand_score', 'torso_score', 'foot_score', 'arm_score','comment'\n"
+        #     "8. 分数的评定标准：检查关键词中是否包含对应部位正确动作和错误动作的描述，正确动作越多，错误动作越少，分数越高，反之越低，分数必须为整数\n"
+        #     "9. 回复字数尽量精确地控制在550字左右，以保证和真实的评价字数对齐"
+        #     f"10. 在评估文本生成和分数评定时请一并参考下面的指标来修正根据检索信息的结论："
+        #     f"(1).手-肩-手夹角（越接近180，说明手臂的动作越规范，大于等于160度为优秀水平，手臂部位得分4-5分，有关手臂的评价一定正面；位于152.7-160度为良好水平，手臂部位得分3-4分；位于142.7-152.7度为中等水平，手臂部位得分2-3分，可出现负面评价；小于142.7度为较差水平，手臂部位得分1-2分，必然出现负面评价）：{math_feature['max_angle_avg']}"
+        #     f"(2).手距下巴距离（越小说明手部拉弓，鼻贴弓弦的动作越规范。小于等于0.1026为优秀水平，手部得分4-5分，有关手部的评价一定正面；位于0.1026-0.1092为良好水平，手部得分3-4分；位于0.1092-0.1150为中等水平，手部得分2-3分，可出现负面评价；大于0.1150度为较差水平，手部得分1-2分，必然出现负面评价）：{math_feature['min_dist_avg']}"
+        #     f"(3).身体重心对齐度（越小说明身体重心越垂直，小于等于0.001为优秀水平，躯干部位得分4-5分，有关躯干的评价一定正面；位于0.001-0.002为良好水平，躯干部位得分3-4分；位于0.002-0.0027为中等水平，躯干部位得分2-3分，可出现负面评价；大于0.0027为较差水平，躯干部位得分1-2分，必然出现负面评价）：{math_feature['min_x_diff_avg']}"
+        # )
         system_instruction = (
             "You are a professional archery coach. Your task is to generate archery assessment text and scores (0-5) for five body parts: head, hands, torso, feet, and arms, plus total score (0-25).\n"
             "Rules:\n"
@@ -199,6 +229,19 @@ def get_response_ali(keywords: list[str], pipeline=1, math_feature=None) -> str:
             f"(1) Hand-shoulder-hand angle (closer to 180° = more standard arm movement. ≥160° = excellent, arm score 4-5, positive evaluation; 152.7-160° = good, score 3-4; 142.7-152.7° = average, score 2-3, may have negative comments; <142.7° = poor, score 1-2, must have negative comments): {math_feature['max_angle_avg']}\n"
             f"(2) Hand-to-chin distance (smaller = more standard draw. ≤0.1026 = excellent, hand score 4-5, positive evaluation; 0.1026-0.1092 = good, score 3-4; 0.1092-0.1150 = average, score 2-3, may have negative comments; >0.1150 = poor, score 1-2, must have negative comments): {math_feature['min_dist_avg']}\n"
             f"(3) Body center alignment (smaller = more vertical. ≤0.001 = excellent, torso score 4-5, positive evaluation; 0.001-0.002 = good, score 3-4; 0.002-0.0027 = average, score 2-3, may have negative comments; >0.0027 = poor, score 1-2, must have negative comments): {math_feature['min_x_diff_avg']}"
+        )
+    else:#simplified
+        # system_instruction = (
+        #     "1.根据给定的关键信息列表生成射箭评估文本和对射箭人头部，手部，躯干，足部和手臂这五个部位的得分（范围0-5）以及总分（0-25）"
+        #     "2. 回复的标准格式：这位同学的正确动作如下:......这位同学的错误动作如下:......\n"
+        #     "3. 请输出json格式的字符串，key为'total_score','head_score', 'hand_score', 'torso_score', 'foot_score', 'arm_score','comment'\n"
+        #     "4. 回复字数尽量精确地控制在550字左右，以保证和真实的评价字数对齐"
+        # )
+        system_instruction = (
+            "1. Generate archery evaluation text based on the provided key information list, including scores (range 0-5) for the archer's head, hands, torso, feet, and arms—five body parts—along with a total score (0-25)."
+            "2. Standard response format: This student's correct actions are as follows:...... The student's incorrect actions are as follows:......\n"
+            "3. Output a JSON-formatted string with keys 'total_score', 'head_score', 'hand_score', 'torso_score', 'foot_score', 'arm_score', 'comment'\n"
+            "4. Keep the response length precisely around 550 characters to match real evaluation length."
         )
 
     keyword_str = "\n".join([f"- {k}" for k in keywords])

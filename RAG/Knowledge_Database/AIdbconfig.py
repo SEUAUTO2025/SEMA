@@ -14,7 +14,7 @@ script_dir = os.path.dirname(script_path)
 # Get project root directory (parent of script directory)
 project_root = os.path.dirname(script_dir)
 # Construct absolute path to database file
-db_path = os.path.join(project_root, "db_files", "LLM_Knowledge_New_ali.db")
+db_path = os.path.join(project_root, "db_files", "LLM_Knowledge_New_ali_zh.db")
 
 DATABASE_URL = 'sqlite:///' + db_path
 engine = create_engine(DATABASE_URL, echo=False)

@@ -1,6 +1,7 @@
 """
 Analyze biomechanical feature distribution of all samples
 Determine grading standards based on distribution
+Exclude first 180 samples and generate pie charts
 """
 import sys
 import os
@@ -12,9 +13,97 @@ if project_root not in sys.path:
 import torch
 import numpy as np
 from pathlib import Path
-from Tools.Gen_dataset.create_dummy_dataset import load_single_csv_with_multipart_labels
-from Tools.Gen_dataset.model_config import NUM_COORDS, MAX_FRAMES
+import matplotlib.pyplot as plt
+from Tools.Gen_dataset.dataset_exe import load_single_csv_with_multipart_labels
+from Tools.Gen_dataset.dataset_exe import NUM_COORDS, MAX_FRAMES
 from RTMPose.Bone_Feature_Extract import cal_math_features, extract_action_features
+
+def plot_grade_distribution(stats, grade_standards, output_folder='output_charts'):
+    """
+    Plot pie charts for grade distribution of each feature
+    
+    Args:
+        stats: Statistics dictionary containing feature values
+        grade_standards: Grading standards for each feature
+        output_folder: Folder to save the charts
+    """
+    # Create output folder if not exists
+    os.makedirs(output_folder, exist_ok=True)
+    
+    # Feature display names
+    feature_names = {
+        'max_angle_avg': 'Hand-Shoulder-Hand Angle',
+        'min_dist_avg': 'Left Hand to Chin Distance',
+        'min_x_diff_avg': 'Shoulder-Foot X Difference'
+    }
+    
+    # Grade colors
+    colors = ['#2ecc71', '#3498db', '#f39c12', '#e74c3c']  # Excellent, Good, Average, Poor
+    
+    for feature_key, feature_stat in stats.items():
+        if feature_key not in grade_standards:
+            continue
+            
+        values = feature_stat['values']
+        standard = grade_standards[feature_key]
+        
+        # Count samples in each grade
+        excellent_count = 0
+        good_count = 0
+        average_count = 0
+        poor_count = 0
+        
+        if standard['direction'] == 'higher_is_better':
+            # Higher is better (e.g., angle)
+            for val in values:
+                if val >= standard['excellent']:
+                    excellent_count += 1
+                elif val >= standard['good']:
+                    good_count += 1
+                elif val >= standard['average']:
+                    average_count += 1
+                else:
+                    poor_count += 1
+        else:
+            # Lower is better (e.g., distance)
+            for val in values:
+                if val <= standard['excellent']:
+                    excellent_count += 1
+                elif val <= standard['good']:
+                    good_count += 1
+                elif val <= standard['average']:
+                    average_count += 1
+                else:
+                    poor_count += 1
+        
+        # Create pie chart
+        counts = [excellent_count, good_count, average_count, poor_count]
+        labels = ['Excellent', 'Good', 'Average', 'Poor']
+        
+        plt.figure(figsize=(10, 8))
+        wedges, texts, autotexts = plt.pie(counts, labels=labels, colors=colors, autopct='%1.1f%%',
+                                            startangle=90, textprops={'fontsize': 12, 'weight': 'bold'})
+        
+        # Make percentage text more visible
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_fontsize(14)
+        
+        plt.title(f'{feature_names[feature_key]} - Grade Distribution\n(Total: {len(values)} samples, Excluding first 180)',
+                  fontsize=14, weight='bold', pad=20)
+        
+        # Add legend with counts
+        legend_labels = [f'{labels[i]}: {counts[i]} ({counts[i]/len(values)*100:.1f}%)' 
+                        for i in range(len(labels))]
+        plt.legend(legend_labels, loc='upper left', bbox_to_anchor=(1, 1), fontsize=10)
+        
+        plt.tight_layout()
+        
+        # Save chart
+        output_path = os.path.join(output_folder, f'{feature_key}_distribution.png')
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        print(f"Saved chart: {output_path}")
+        plt.close()
 
 def analyze_all_samples(csv_folder_path):
     """
@@ -27,9 +116,13 @@ def analyze_all_samples(csv_folder_path):
         Statistics dictionary and grading standards
     """
     csv_folder = Path(csv_folder_path)
-    csv_files = list(csv_folder.glob("*.csv"))
+    csv_files = sorted(list(csv_folder.glob("*.csv")))  # Sort for consistent ordering
     
     print(f"Found {len(csv_files)} sample files")
+    
+    # Skip first N samples
+    csv_files = csv_files[180:]
+    print(f"Analyzing {len(csv_files)} samples (after skipping)")
     
     all_features = {
         'max_angle_avg': [],
@@ -172,25 +265,23 @@ def analyze_all_samples(csv_folder_path):
         x_diff_s = stats['min_x_diff_avg']
         
         print(f"""
-Based on {len(csv_files)} samples, biomechanical feature grading standards:
+        1. Hand-Shoulder-Hand Angle (Draw Angle) - Higher is better
+        • Excellent (≥{angle_s['q75']:.2f}°): Top 25%
+        • Good ({angle_s['median']:.2f}°-{angle_s['q75']:.2f}°): 25%-50%
+        • Average ({angle_s['q25']:.2f}°-{angle_s['median']:.2f}°): 50%-75%
+        • Poor (<{angle_s['q25']:.2f}°): Bottom 25%
 
-1. Hand-Shoulder-Hand Angle (Draw Angle) - Higher is better
-   • Excellent (≥{angle_s['q75']:.2f}°): Top 25%
-   • Good ({angle_s['median']:.2f}°-{angle_s['q75']:.2f}°): 25%-50%
-   • Average ({angle_s['q25']:.2f}°-{angle_s['median']:.2f}°): 50%-75%
-   • Poor (<{angle_s['q25']:.2f}°): Bottom 25%
+        2. Left Hand to Chin Distance (Anchor Stability) - Lower is better
+        • Excellent (≤{dist_s['q25']:.4f}): Top 25%
+        • Good ({dist_s['q25']:.4f}-{dist_s['median']:.4f}): 25%-50%
+        • Average ({dist_s['median']:.4f}-{dist_s['q75']:.4f}): 50%-75%
+        • Poor (>{dist_s['q75']:.4f}): Bottom 25%
 
-2. Left Hand to Chin Distance (Anchor Stability) - Lower is better
-   • Excellent (≤{dist_s['q25']:.4f}): Top 25%
-   • Good ({dist_s['q25']:.4f}-{dist_s['median']:.4f}): 25%-50%
-   • Average ({dist_s['median']:.4f}-{dist_s['q75']:.4f}): 50%-75%
-   • Poor (>{dist_s['q75']:.4f}): Bottom 25%
-
-3. Body Center Alignment (Shoulder-Foot X Difference) - Lower is better
-   • Excellent (≤{x_diff_s['q25']:.4f}): Top 25%
-   • Good ({x_diff_s['q25']:.4f}-{x_diff_s['median']:.4f}): 25%-50%
-   • Average ({x_diff_s['median']:.4f}-{x_diff_s['q75']:.4f}): 50%-75%
-   • Poor (>{x_diff_s['q75']:.4f}): Bottom 25%
+        3. Body Center Alignment (Shoulder-Foot X Difference) - Lower is better
+        • Excellent (≤{x_diff_s['q25']:.4f}): Top 25%
+        • Good ({x_diff_s['q25']:.4f}-{x_diff_s['median']:.4f}): 25%-50%
+        • Average ({x_diff_s['median']:.4f}-{x_diff_s['q75']:.4f}): 50%-75%
+        • Poor (>{x_diff_s['q75']:.4f}): Bottom 25%
         """)
     
     print("\n" + "="*80)
@@ -199,16 +290,18 @@ Based on {len(csv_files)} samples, biomechanical feature grading standards:
 
 
 if __name__ == "__main__":
-    csv_folder = r"D:\pythonWorks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master\whole_dataset_txt!!!!!!!!\csv_test"
-    
+    csv_folder = r"dataset\csv"
     stats, grade_standards = analyze_all_samples(csv_folder)
     
-    output_file = "biomechanics_grade_standards.txt"
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write("="*80 + "\n")
-        f.write("Biomechanical Feature Grading Standards\n")
-        f.write("="*80 + "\n\n")
-        
+    # Generate pie charts
+    print("\n" + "="*80)
+    print("Generating pie charts...")
+    print("="*80)
+    plot_grade_distribution(stats, grade_standards)
+    
+    # Save text report
+    output_file = "report_output/biomechanics_grade_standards.txt"
+    with open(output_file, 'w', encoding='utf-8') as f:        
         for feature_name, standard in grade_standards.items():
             f.write(f"\n{feature_name}:\n")
             f.write(f"  Direction: {standard['direction']}\n")
@@ -229,3 +322,4 @@ if __name__ == "__main__":
             f.write(f"  Max: {s['max']:.4f}\n")
     
     print(f"\nGrading standards saved to: {output_file}")
+    print("Analysis complete!")
