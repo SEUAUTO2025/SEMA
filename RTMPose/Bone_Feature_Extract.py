@@ -9,7 +9,7 @@ import cv2
 
 import torch
 import numpy as np
-from Tools.Gen_dataset.model_config import model_configs
+from Tools.Exe_dataset.model_config import model_configs
 
 def Keypoint_Extract(path_to_video, image_width=1920, image_height=1080):
     from RTMPose.rtmlib import PoseTracker, Wholebody3d, draw_skeleton

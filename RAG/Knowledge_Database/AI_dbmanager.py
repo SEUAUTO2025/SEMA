@@ -3,16 +3,18 @@
 @description: AI Database Operations Class
 """
 
-import sys, os
-absolute_project_root = r"D:\Pythonworks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master"
 
-project_root = os.path.abspath(absolute_project_root)
-
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# absolute_project_root = r"D:\Pythonworks\SpatialTemporalAttentionGCN-master\SpatialTemporalAttentionGCN-master"
+#
+# project_root = os.path.abspath(absolute_project_root)
+#
+# if project_root not in sys.path:
+#     sys.path.insert(0, project_root)
 
 from sqlalchemy import Column, Integer, String, Text, LargeBinary, Float, ForeignKey, MetaData, create_engine
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+import sys, os
+from deep_translator import DeeplTranslator
 import numpy as np
 import pickle
 from AIdbconfig import engine, session
@@ -56,9 +58,6 @@ class Embedding(Base):
     chunk = relationship("Chunk", back_populates="embeddings")
 
 Chunk.embeddings = relationship("Embedding", back_populates="chunk")
-
-import os
-from deep_translator import DeeplTranslator
 
 def batch_translate_files(input_folder, api_key, target_lang='en'):
     """Batch translate text files using DeepL API"""
@@ -321,23 +320,6 @@ class KnowledgeDB:
 
         print("\nModel response:")
         print(response)
-    
-    def AI_Analyse(self, prompt, embedding_model="languagebind_text", chat_model="gemini-3-pro-preview"):
-        """Call API for analysis"""
-        context_chunks = [chunk.text for chunk, score in search_results]
-        context = "\n\n---\n\n".join(context_chunks)
-
-        print("Context found, generating response...")
-        
-        try:
-            response = self.chat_model_choose(chat_model)(prompt=prompt, context=context)
-        except Exception as e:
-            print(f"Error calling LLM: {e}")
-            return
-
-        print("\nModel response:")
-        print(response)
-
 
 # if __name__ == "__main__":
 #     txt_folder_path = os.path.join(project_root, "RAG", "txt_files") 

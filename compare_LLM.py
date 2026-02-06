@@ -25,7 +25,7 @@ from openai import OpenAI
 from RTMPose.Bone_Feature_Extract import *
 from RAG.tokenize_search import *
 from RAG.Knowledge_Database.RAGFunc import *
-from Tools.Gen_dataset.dataset_exe import load_single_csv_with_multipart_labels
+from Tools.Exe_dataset.dataset_exe import load_single_csv_with_multipart_labels
 
 # Configuration
 VIDEO_PATH = r""  # TODO: Set video path
@@ -260,29 +260,28 @@ def evaluate_comment(ground_truth: str, generated_comment: str, model_name: str)
     )
     
     prompt = f"""You are a professional archery coach evaluation expert. Here are two archery posture evaluation texts:
-
-【Teacher's Standard Evaluation (Full Score Baseline)】:
-{ground_truth}
-
-【Generated Evaluation to be Assessed】:
-{generated_comment}
-
-Please score the 【Generated Evaluation】 on the following three dimensions (5-point Likert scale, 1 lowest, 5 highest, decimals allowed):
-
-1. **Accuracy**: Are the technical points and action descriptions accurate? How consistent with the standard evaluation?
-2. **Professionalism**: Are the terms and expressions professional? Does it reflect archery domain expertise?
-3. **Practicality**: How valuable is the guidance for students? Are improvement suggestions specific and actionable?
-
-**Scoring Standards**:
-- 5: Excellent, fully meets standard evaluation level
-- 4: Good, mostly meets standard
-- 3: Average, basically meets standard but with obvious deficiencies
-- 2: Poor, significant gap from standard
-- 1: Very poor, seriously deviates from standard
-
-**Important**: Output only JSON format scoring results, no other content. Format:
-{{"Accuracy": score, "Professionalism": score, "Practicality": score}}
-"""
+    【Teacher's Standard Evaluation (Full Score Baseline)】:
+    {ground_truth}
+    
+    【Generated Evaluation to be Assessed】:
+    {generated_comment}
+    
+    Please score the 【Generated Evaluation】 on the following three dimensions (5-point Likert scale, 1 lowest, 5 highest, decimals allowed):
+    
+    1. **Accuracy**: Are the technical points and action descriptions accurate? How consistent with the standard evaluation?
+    2. **Professionalism**: Are the terms and expressions professional? Does it reflect archery domain expertise?
+    3. **Practicality**: How valuable is the guidance for students? Are improvement suggestions specific and actionable?
+    
+    **Scoring Standards**:
+    - 5: Excellent, fully meets standard evaluation level
+    - 4: Good, mostly meets standard
+    - 3: Average, basically meets standard but with obvious deficiencies
+    - 2: Poor, significant gap from standard
+    - 1: Very poor, seriously deviates from standard
+    
+    **Important**: Output only JSON format scoring results, no other content. Format:
+    {{"Accuracy": score, "Professionalism": score, "Practicality": score}}
+    """
     
     try:
         response = client.chat.completions.create(

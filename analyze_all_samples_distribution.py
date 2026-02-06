@@ -14,8 +14,8 @@ import torch
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
-from Tools.Gen_dataset.dataset_exe import load_single_csv_with_multipart_labels
-from Tools.Gen_dataset.dataset_exe import NUM_COORDS, MAX_FRAMES
+from Tools.Exe_dataset.dataset_exe import load_single_csv_with_multipart_labels
+from Tools.Exe_dataset.dataset_exe import NUM_COORDS, MAX_FRAMES
 from RTMPose.Bone_Feature_Extract import cal_math_features, extract_action_features
 
 def plot_grade_distribution(stats, grade_standards, output_folder='output_charts'):
