@@ -48,7 +48,6 @@ def get_matching_labels(video_name, csv_dir):
             return None, None
     return None, None
 
-
 def process_single_video(video_path):
     """Process single video: extract features, generate evaluation"""
     try:

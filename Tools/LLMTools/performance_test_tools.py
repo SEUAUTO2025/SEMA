@@ -12,7 +12,7 @@ from deep_translator import DeeplTranslator
 import os
 from Tools.Exe_dataset.dataset_exe import *
 
-#TODO 接着做实验，大笔记本拉代码，挑数据，compareLLM，统计分布（有待优化）的逻辑重写成函数，论文里没做的实验接着做
+#TODO 接着做实验，大笔记本拉代码，挑数据，统计分布（有待优化）的逻辑重写成函数，论文里没做的实验接着做
 
 def calculate_BF1_score(reference_text: str, candidate_text: str, lang="zh"):
     """

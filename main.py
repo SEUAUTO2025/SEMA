@@ -16,18 +16,9 @@ from RTMPose.Bone_Feature_Extract import *
 from RAG.tokenize_search import *
 from RAG.Knowledge_Database.RAGFunc import *
 from Tools.Exe_dataset.dataset_exe import load_single_csv_with_multipart_labels
-from performance_test_tools import *
+from Tools.LLMTools.performance_test_tools import *
 import json
 from DIR import project_root
-import nltk
-from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
-from nltk.translate.meteor_score import meteor_score
-from nltk.tokenize import word_tokenize
-import jieba
-from bert_score import score
-import logging
-from pycocoevalcap.cider.cider import Cider
-from deep_translator import DeeplTranslator
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 video_path = r""
@@ -90,3 +81,4 @@ if __name__ == '__main__':
     print(scores)
     print(label)
     print(f'Ground Truth Total: {label_total}, Model Total: {scores["total"]}')
+    

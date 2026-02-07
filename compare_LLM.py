@@ -28,9 +28,9 @@ from RAG.Knowledge_Database.RAGFunc import *
 from Tools.Exe_dataset.dataset_exe import load_single_csv_with_multipart_labels
 
 # Configuration
-VIDEO_PATH = r""  # TODO: Set video path
-TXT_PATH = r""    # TODO: Set txt directory path
-CSV_PATH = r""    # TODO: Set csv directory path
+VIDEO_PATH = r""  #Set video path
+TXT_PATH = r""    #Set txt directory path
+CSV_PATH = r""    #Set csv directory path
 
 # Evaluation models
 EVAL_MODEL_1 = "qwen-vl-plus"
@@ -125,121 +125,121 @@ def get_matching_text(video_path, txt_dir, csv_dir):
         return None, label, label_total
 
 
-def generate_comment_chatgpt(video_path, prompt):
-    """
-    Generate archery evaluation comment using ChatGPT with video frames
+# def generate_comment_chatgpt(video_path, prompt):
+#     """
+#     Generate archery evaluation comment using ChatGPT with video frames
     
-    Args:
-        video_path: Path to video file
-        prompt: Prompt template for ChatGPT
+#     Args:
+#         video_path: Path to video file
+#         prompt: Prompt template for ChatGPT
     
-    Returns:
-        Generated comment text
-    """
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url="https://api.openai.com/v1",
-    )
+#     Returns:
+#         Generated comment text
+#     """
+#     client = OpenAI(
+#         api_key=os.getenv("OPENAI_API_KEY"),
+#         base_url="https://api.openai.com/v1",
+#     )
     
-    # Extract frames from video
-    print("  Extracting frames from video...")
-    frames_base64 = extract_frames_from_video(video_path, num_frames=124)
+#     # Extract frames from video
+#     print("  Extracting frames from video...")
+#     frames_base64 = extract_frames_from_video(video_path, num_frames=124)
     
-    if not frames_base64:
-        print("  Error: No frames extracted from video")
-        return ""
+#     if not frames_base64:
+#         print("  Error: No frames extracted from video")
+#         return ""
     
-    # Build message content with text prompt and frames
-    message_content = [
-        {
-            "type": "text",
-            "text": prompt
-        }
-    ]
+#     # Build message content with text prompt and frames
+#     message_content = [
+#         {
+#             "type": "text",
+#             "text": prompt
+#         }
+#     ]
     
-    # Add frames as images (sample every N frames to avoid token limit)
-    # For 124 frames, sample every 4th frame to get ~31 frames
-    sample_interval = max(1, len(frames_base64) // 31)
-    sampled_frames = frames_base64[::sample_interval]
+#     # Add frames as images (sample every N frames to avoid token limit)
+#     # For 124 frames, sample every 4th frame to get ~31 frames
+#     sample_interval = max(1, len(frames_base64) // 31)
+#     sampled_frames = frames_base64[::sample_interval]
     
-    print(f"  Sending {len(sampled_frames)} frames to ChatGPT...")
+#     print(f"  Sending {len(sampled_frames)} frames to ChatGPT...")
     
-    for frame_base64 in sampled_frames:
-        message_content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{frame_base64}"
-            }
-        })
+#     for frame_base64 in sampled_frames:
+#         message_content.append({
+#             "type": "image_url",
+#             "image_url": {
+#                 "url": f"data:image/jpeg;base64,{frame_base64}"
+#             }
+#         })
     
-    try:
-        response = client.chat.completions.create(
-            model=CHATGPT_MODEL,
-            messages=[
-                {"role": "user", "content": message_content}
-            ],
-            temperature=0.7,
-        )
+#     try:
+#         response = client.chat.completions.create(
+#             model=CHATGPT_MODEL,
+#             messages=[
+#                 {"role": "user", "content": message_content}
+#             ],
+#             temperature=0.7,
+#         )
         
-        comment = response.choices[0].message.content.strip()
-        return comment
+#         comment = response.choices[0].message.content.strip()
+#         return comment
         
-    except Exception as e:
-        print(f"  ChatGPT API error: {e}")
-        return ""
+#     except Exception as e:
+#         print(f"  ChatGPT API error: {e}")
+#         return ""
 
 
-def generate_comment_qwen(video_path):
-    """
-    Generate archery evaluation comment using Qwen-plus
+# def generate_comment_qwen(video_path):
+#     """
+#     Generate archery evaluation comment using Qwen-plus
     
-    Args:
-        video_path: Path to video file
-        csv_path: Path to CSV file
-        txt_path: Path to txt file (ground truth)
-        prompt: Prompt template for Qwen
+#     Args:
+#         video_path: Path to video file
+#         csv_path: Path to CSV file
+#         txt_path: Path to txt file (ground truth)
+#         prompt: Prompt template for Qwen
     
-    Returns:
-        Generated comment text
-    """
-    client = OpenAI(
-        api_key=os.getenv("ALI_API_KEY"),
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    )
+#     Returns:
+#         Generated comment text
+#     """
+#     client = OpenAI(
+#         api_key=os.getenv("ALI_API_KEY"),
+#         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+#     )
     
-    comment = get_video_ori_keywords_ali(video_path)
+#     comment = get_video_ori_keywords_ali(video_path)
 
-    return comment
+#     return comment
 
-def generate_comment_framework(video_path):
-    """
-    Generate archery evaluation comment using the framework (RAG + LLM)
+# def generate_comment_framework(video_path):
+#     """
+#     Generate archery evaluation comment using the framework (RAG + LLM)
     
-    Args:
-        video_path: Path to video file
+#     Args:
+#         video_path: Path to video file
     
-    Returns:
-        Generated comment text
-    """
-    try:
-        # Extract features
-        all_data = Keypoint_Extract(video_path)
-        _, math_feature = Extract_Bodypart_Data(all_data, 2560, 1440)
-        math_feature_input = extract_action_features(math_feature)
+#     Returns:
+#         Generated comment text
+#     """
+#     try:
+#         # Extract features
+#         all_data = Keypoint_Extract(video_path)
+#         _, math_feature = Extract_Bodypart_Data(all_data, 2560, 1440)
+#         math_feature_input = extract_action_features(math_feature)
         
-        # Get keywords and generate response
-        keywords = Tokenize_SearchKeyword(video_path=video_path, pipeline=1, language='en')
-        answer = get_response_ali(keywords, pipeline=2, math_feature=math_feature_input)
+#         # Get keywords and generate response
+#         keywords = Tokenize_SearchKeyword(video_path=video_path, pipeline=1, language='en')
+#         answer = get_response_ali(keywords, pipeline=2, math_feature=math_feature_input)
         
-        # Parse JSON response
-        data = json.loads(answer)
-        comment = data.get("comment", "")
+#         # Parse JSON response
+#         data = json.loads(answer)
+#         comment = data.get("comment", "")
         
-        return comment
+#         return comment
         
-    except Exception as e:
-        print(f"Framework generation error: {e}")
-        return ""
+#     except Exception as e:
+#         print(f"Framework generation error: {e}")
+#         return ""
 
 
 def evaluate_comment(ground_truth: str, generated_comment: str, model_name: str) -> dict:

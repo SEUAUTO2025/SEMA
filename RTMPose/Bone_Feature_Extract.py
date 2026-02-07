@@ -9,6 +9,8 @@ import cv2
 
 import torch
 import numpy as np
+import ruptures as rpt
+
 from Tools.Exe_dataset.model_config import model_configs
 
 def Keypoint_Extract(path_to_video, image_width=1920, image_height=1080):
@@ -175,6 +177,154 @@ def cal_math_features(keypoints_data):
     }
 
     return features
+
+
+def extract_keyframes_with_ruptures(
+    math_features,
+    k=8,
+    model="rbf",
+    min_size=5,
+    jump=1,
+    candidate_multiplier=3,
+    score_window=5
+):
+    """
+    Extract keyframes from three biomechanical features using ruptures.
+
+    Args:
+        math_features: dict containing keys
+            - 'shoulder_wrist_angle'
+            - 'left_hand_to_chin_dist'
+            - 'shoulder_foot_x_diff'
+            Values can be torch.Tensor or numpy.ndarray with shape (frames,)
+        k: Number of keyframes to return
+        model: ruptures cost model, default 'rbf'
+        min_size: Minimum segment size for change point detection
+        jump: Search step size for change point detection
+        candidate_multiplier: Candidate breakpoints multiplier for Top-k selection
+        score_window: Window size around breakpoint for intensity scoring
+
+    Returns:
+        list[dict]: Sorted keyframes by descending score
+            [{"frame_idx": int, "score": float}, ...]
+    """
+    required_keys = [
+        "shoulder_wrist_angle",
+        "left_hand_to_chin_dist",
+        "shoulder_foot_x_diff",
+    ]
+
+    if not isinstance(math_features, dict):
+        raise TypeError("math_features must be a dict")
+    if rpt is None:
+        raise ImportError(
+            "ruptures is required for extract_keyframes_with_ruptures. "
+            "Please install it (e.g., pip install ruptures)."
+        )
+
+    missing_keys = [key for key in required_keys if key not in math_features]
+    if missing_keys:
+        raise KeyError(f"math_features missing required keys: {missing_keys}")
+
+    if k <= 0:
+        return []
+
+    min_size = max(1, int(min_size))
+    jump = max(1, int(jump))
+    score_window = max(1, int(score_window))
+    candidate_multiplier = max(1, int(candidate_multiplier))
+    k = int(k)
+
+    def _to_1d_float64(value):
+        if isinstance(value, torch.Tensor):
+            arr = value.detach().cpu().numpy()
+        else:
+            arr = np.asarray(value)
+        arr = np.asarray(arr, dtype=np.float64).reshape(-1)
+        return arr
+
+    def _fill_invalid_1d(arr):
+        arr = np.asarray(arr, dtype=np.float64).copy()
+        valid = np.isfinite(arr)
+        if valid.sum() == 0:
+            return np.zeros_like(arr, dtype=np.float64)
+        if valid.sum() == len(arr):
+            return arr
+        valid_idx = np.where(valid)[0]
+        invalid_idx = np.where(~valid)[0]
+        arr[invalid_idx] = np.interp(invalid_idx, valid_idx, arr[valid_idx])
+        return arr
+
+    def _zscore_columns(x):
+        x = np.asarray(x, dtype=np.float64)
+        mean = x.mean(axis=0, keepdims=True)
+        std = x.std(axis=0, keepdims=True)
+        std_safe = np.where(std < 1e-8, 1.0, std)
+        x_std = (x - mean) / std_safe
+        x_std[:, (std.reshape(-1) < 1e-8)] = 0.0
+        return x_std
+
+    def _fallback_from_diffs(x_std, top_k):
+        t = x_std.shape[0]
+        if t <= 1:
+            return []
+        diffs = np.mean(np.abs(x_std[1:] - x_std[:-1]), axis=1)
+        if diffs.size == 0:
+            return []
+        candidate_frames = np.arange(1, t)
+        order = sorted(
+            range(len(candidate_frames)),
+            key=lambda i: (-float(diffs[i]), int(candidate_frames[i])),
+        )
+        return [
+            {"frame_idx": int(candidate_frames[i]), "score": float(diffs[i])}
+            for i in order[:top_k]
+        ]
+
+    feature_arrays = [_to_1d_float64(math_features[key]) for key in required_keys]
+    lengths = [len(arr) for arr in feature_arrays]
+    if min(lengths) == 0:
+        return []
+
+    if len(set(lengths)) != 1:
+        min_len = min(lengths)
+        feature_arrays = [arr[:min_len] for arr in feature_arrays]
+
+    filled_arrays = [_fill_invalid_1d(arr) for arr in feature_arrays]
+    x = np.column_stack(filled_arrays)
+    t = x.shape[0]
+    x_std = _zscore_columns(x)
+
+    if t < 4:
+        return _fallback_from_diffs(x_std, min(k, max(0, t - 1)))
+
+    n_bkps = min(t - 1, max(k, k * candidate_multiplier))
+
+    try:
+        algo = rpt.Binseg(model=model, min_size=min_size, jump=jump).fit(x_std)
+        bkps = algo.predict(n_bkps=n_bkps)
+    except Exception:
+        return _fallback_from_diffs(x_std, min(k, max(0, t - 1)))
+
+    candidates = sorted({int(b) for b in bkps if 0 < int(b) < t})
+    scored = []
+    for b in candidates:
+        left_start = max(0, b - score_window)
+        right_end = min(t, b + score_window)
+        left = x_std[left_start:b]
+        right = x_std[b:right_end]
+        if left.shape[0] == 0 or right.shape[0] == 0:
+            continue
+        mu_l = left.mean(axis=0)
+        mu_r = right.mean(axis=0)
+        score = float(np.mean(np.abs(mu_r - mu_l)))
+        scored.append({"frame_idx": int(b), "score": score})
+
+    if not scored:
+        return _fallback_from_diffs(x_std, min(k, max(0, t - 1)))
+
+    scored.sort(key=lambda item: (-item["score"], item["frame_idx"]))
+    return scored[:k]
 
 def extract_action_features(features):
     """
