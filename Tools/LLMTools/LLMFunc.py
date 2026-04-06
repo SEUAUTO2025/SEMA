@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 import os
 import json
 import math
@@ -17,17 +17,37 @@ def extract_frames_by_indices(video_path: str, frame_indices):
     if not cap.isOpened():
         raise RuntimeError(f"Failed to open video: {video_path}")
 
-    frames = []
+    unique_indices = sorted({int(idx) for idx in frame_indices if int(idx) >= 0})
+    if not unique_indices:
+        cap.release()
+        return []
+
+    frame_map = {}
+    ptr = 0
+    read_idx = 0
+    next_target = unique_indices[ptr]
     try:
-        for idx in frame_indices:
-            cap.set(cv2.CAP_PROP_POS_FRAMES, int(idx))
+        while cap.isOpened() and ptr < len(unique_indices):
             ok, frame = cap.read()
-            if not ok:
-                raise RuntimeError(f"Failed to read frame {idx} from {video_path}")
-            frames.append(frame)
+            if not ok or frame is None:
+                break
+            if read_idx == next_target:
+                frame_map[read_idx] = frame.copy()
+                ptr += 1
+                if ptr < len(unique_indices):
+                    next_target = unique_indices[ptr]
+                else:
+                    break
+            read_idx += 1
     finally:
         cap.release()
 
+    frames = []
+    for idx in frame_indices:
+        idx = int(idx)
+        if idx not in frame_map:
+            raise RuntimeError(f"Failed to read frame {idx} from {video_path}")
+        frames.append(frame_map[idx])
     return frames
 
 def cv_png_to_base64(img_bgr: np.ndarray, png_compression: int = 3) -> str:
@@ -172,7 +192,6 @@ def evaluate_comment(ground_truth: str, generated_comment: str, model_name: str)
 
 def _project_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
 
 def _load_eval_db_api():
     try:
@@ -620,7 +639,6 @@ def _make_run_dir(base_results_dir: str, prefix: str = "batch_eval") -> str:
     run_dir = os.path.join(base_results_dir, run_name)
     os.makedirs(run_dir, exist_ok=True)
     return run_dir
-
 
 def batch_evaluate_from_eval_db(
     eval_model_name: str,

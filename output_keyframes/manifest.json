@@ -1,0 +1,48 @@
+{
+  "video_path": "D:\\Pythonworks\\SEMA\\dataset\\video\\414.mp4",
+  "output_dir": "D:\\Pythonworks\\SEMA\\output_keyframes",
+  "target_k": 8,
+  "saved_count": 8,
+  "keyframes": [
+    {
+      "rank": 1,
+      "frame_idx": 54,
+      "file_name": "1.jpg"
+    },
+    {
+      "rank": 2,
+      "frame_idx": 62,
+      "file_name": "2.jpg"
+    },
+    {
+      "rank": 3,
+      "frame_idx": 76,
+      "file_name": "3.jpg"
+    },
+    {
+      "rank": 4,
+      "frame_idx": 79,
+      "file_name": "4.jpg"
+    },
+    {
+      "rank": 5,
+      "frame_idx": 82,
+      "file_name": "5.jpg"
+    },
+    {
+      "rank": 6,
+      "frame_idx": 85,
+      "file_name": "6.jpg"
+    },
+    {
+      "rank": 7,
+      "frame_idx": 88,
+      "file_name": "7.jpg"
+    },
+    {
+      "rank": 8,
+      "frame_idx": 90,
+      "file_name": "8.jpg"
+    }
+  ]
+}

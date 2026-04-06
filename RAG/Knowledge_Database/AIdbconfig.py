@@ -15,9 +15,18 @@ script_dir = os.path.dirname(script_path)
 project_root = os.path.dirname(script_dir)
 # Construct absolute path to database file
 db_path = os.path.join(project_root, "db_files", "LLM_Knowledge_New_ali_zh.db")
+db_en_path = os.path.join(project_root, "db_files", "LLM_Knowledge_New_En.db")
+db_pure_path = os.path.join(project_root, "db_files", "LLM_Knowledge_Pure.db")
 
 DATABASE_URL = 'sqlite:///' + db_path
+DATABASE_EN_URL = 'sqlite:///' + db_en_path
+DATABASE_PURE_URL = 'sqlite:///' + db_pure_path
+
 engine = create_engine(DATABASE_URL, echo=False)
+engine_en = create_engine(DATABASE_EN_URL, echo=False)
+engine_pure = create_engine(DATABASE_PURE_URL, echo=False)
 
 # Create Session class
 session = sessionmaker(bind=engine)()
+session_en = sessionmaker(bind=engine_en)()
+session_pure = sessionmaker(bind=engine_pure)()

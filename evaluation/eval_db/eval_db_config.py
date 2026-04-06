@@ -20,7 +20,13 @@ def _enable_sqlite_fk(db_engine: Engine) -> None:
 
 script_path = os.path.abspath(__file__)
 script_dir = os.path.dirname(script_path)
-db_path = os.path.join(script_dir, "evaluation.db")
+
+DEFAULT_DB_FILENAME = "evaluation3.db"
+env_db_path = os.getenv("SEMA_EVAL_DB_PATH", "").strip()
+if env_db_path:
+    db_path = env_db_path if os.path.isabs(env_db_path) else os.path.join(script_dir, env_db_path)
+else:
+    db_path = os.path.join(script_dir, DEFAULT_DB_FILENAME)
 
 DATABASE_URL = "sqlite:///" + db_path
 engine = create_engine(DATABASE_URL, echo=False)

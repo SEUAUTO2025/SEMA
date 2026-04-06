@@ -3,27 +3,17 @@ Dataset-level sample distribution analysis entry script.
 Thin wrapper around Tools.Exe_dataset.dataset_test_tools.
 """
 import os
-import sys
 
-from DIR import project_root
-
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-
-from Tools.Exe_dataset.dataset_test_tools import run_dataset_level_distribution_analysis
+from Tools.Exe_dataset.dataset_test_tools import run_biomech_threshold_experiment
 
 
 def main():
-    csv_folder = r"dataset\csv"
-    output_folder = "report_output"
-    chart_output_folder = "output_charts"
+    dataset_path = r"dataset"
     skip_first_n = 180
 
-    result = run_dataset_level_distribution_analysis(
-        csv_folder_path=csv_folder,
+    result = run_biomech_threshold_experiment(
+        dataset_path=dataset_path,
         skip_first_n=skip_first_n,
-        output_folder=output_folder,
-        chart_output_folder=chart_output_folder,
     )
 
     sample_count = len(result["sample_feature_rows"])
@@ -33,7 +23,8 @@ def main():
     print("=" * 80)
     print("Dataset Level Distribution Analysis Finished")
     print("=" * 80)
-    print(f"CSV folder: {os.path.abspath(csv_folder)}")
+    print(f"Dataset root: {os.path.abspath(dataset_path)}")
+    print(f"CSV folder: {os.path.abspath(result.get('csv_folder_path', os.path.join(dataset_path, 'csv')))}")
     print(f"Skip first N samples: {skip_first_n}")
     print(f"Processed samples: {sample_count}")
     print(f"Failed samples: {failed_count}")

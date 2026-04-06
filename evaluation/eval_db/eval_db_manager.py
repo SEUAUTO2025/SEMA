@@ -2,14 +2,17 @@
 @filename: eval_db_manager.py
 @description: Evaluation DB ORM models and CRUD operations (fixed slots)
 """
+import os
 from typing import List, Optional
 from sqlalchemy import Column, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 
 try:
+    from .eval_db_config import db_path as default_db_path
     from .eval_db_config import engine as default_engine
     from .eval_db_config import SessionLocal as DefaultSessionLocal
 except ImportError:
+    from eval_db_config import db_path as default_db_path
     from eval_db_config import engine as default_engine
     from eval_db_config import SessionLocal as DefaultSessionLocal
 
@@ -86,6 +89,19 @@ def _is_empty(val) -> bool:
 def init_db() -> None:
     """Create tables if they do not exist."""
     Base.metadata.create_all(default_engine)
+
+
+def rebuild_empty_db() -> str:
+    """Delete and recreate the SQLite DB file with the current schema."""
+    default_engine.dispose()
+
+    for suffix in ("", "-wal", "-shm", "-journal"):
+        candidate_path = default_db_path + suffix
+        if os.path.exists(candidate_path):
+            os.remove(candidate_path)
+
+    Base.metadata.create_all(default_engine)
+    return default_db_path
 
 
 def add_or_update_evaluation(
