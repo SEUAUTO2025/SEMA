@@ -1,9 +1,4 @@
----
-title: SEMA Web Demo
-sdk: docker
-app_port: 7860
-pinned: false
----
+
 
 # SEMA: Modular Automated Archery Coaching with LLMs
 
@@ -13,27 +8,17 @@ This repository contains the main SEMA inference pipeline, the RTMPose-based bio
 
 ## 1. Project Overview
 
-- `main.py`  
-  Single-sample entry point for the default SEMA pipeline. It runs multimodal assessment, knowledge retrieval, response generation, metric scoring against the matched GT text, and optional follow-up QA.
-- `RTMPose/`  
-  Pose extraction, keyframe selection, and biomechanical feature computation.
-- `RAG/`  
-  Knowledge-base runtime, retrieval logic, and bundled SQLite knowledge databases in `RAG/db_files/`.
-- `Tools/`  
-  Dataset helpers, text metrics, and evaluation utilities.
-- `evaluation/eval_db/`  
-  SQLite storage used by the comparison batch pipelines.
-- `Experiments/BIO_FEATURE_CAL/`  
-  Biomechanical feature validation, threshold fitting, and paper figure scripts.
-- `Experiments/Keyframe/`  
-  Keyframe IoU / hit-ratio robustness experiments and plotting scripts.
-- `Experiments/RAG/`  
-  GT-keyword RAG evaluation.
-- `Experiments/Comparation/`  
-  Batch evaluation pipelines for SEMA, DashScope/Zhipu, OpenRouter, and LLM-judge comparison.
-- `output_keyframes/`  
-  Reference template keyframes used by the FastDTW baseline and paper figure scripts.
-- `PAPER_WORKLOG.md`  
+- `main.py`Single-sample entry point for the default SEMA pipeline. It runs multimodal assessment, knowledge retrieval, response generation, metric scoring against the matched GT text, and optional follow-up QA.
+- `RTMPose/`Pose extraction, keyframe selection, and biomechanical feature computation.
+- `RAG/`Knowledge-base runtime, retrieval logic, and bundled SQLite knowledge databases in `RAG/db_files/`.
+- `Tools/`Dataset helpers, text metrics, and evaluation utilities.
+- `evaluation/eval_db/`SQLite storage used by the comparison batch pipelines.
+- `Experiments/BIO_FEATURE_CAL/`Biomechanical feature validation, threshold fitting, and paper figure scripts.
+- `Experiments/Keyframe/`Keyframe IoU / hit-ratio robustness experiments and plotting scripts.
+- `Experiments/RAG/`GT-keyword RAG evaluation.
+- `Experiments/Comparation/`Batch evaluation pipelines for SEMA, DashScope/Zhipu, OpenRouter, and LLM-judge comparison.
+- `output_keyframes/`Reference template keyframes used by the FastDTW baseline and paper figure scripts.
+- `PAPER_WORKLOG.md`
   Ongoing reproducibility / paper-writing worklog for the SCI version of the project.
 
 ## 2. Environment
@@ -55,9 +40,7 @@ python -m nltk.downloader punkt wordnet omw-1.4
 Notes:
 
 - RTMPose ONNX checkpoints are downloaded automatically by the bundled `rtmlib` code on first use.
-- Some LanguageBind assets may also be downloaded automatically the first time the corresponding embedding path is executed.
 - The default paper pipeline uses `onnxruntime` as the RTMPose backend.
-- `pytorchvideo` is kept out of the default Windows install path in `requirements.txt` because its upstream `av` dependency is often unavailable on Python 3.9 Windows wheels. If you need the full LanguageBind video stack on Windows, install the missing dependency manually or use WSL / Linux.
 
 ## 3. External Runtime Setup
 
@@ -74,13 +57,10 @@ $env:DEEPL_API_KEY="YOUR_DEEPL_KEY"
 
 Which key is used where:
 
-- `ALI_API_KEY`  
-  Required by the default SEMA pipeline in `main.py`, the DashScope comparison scripts, and the CSV LLM-judge scripts.
-- `OPENROUTER_API_KEY`  
-  Required by `Experiments/Comparation/batch_run_openrouter_multimodal_eval.py`.
-- `ZHIPU_API_KEY`  
-  Required only if you keep `glm-4.6v` in the DashScope comparison model list.
-- `DEEPL_API_KEY`  
+- `ALI_API_KEY`Required by the default SEMA pipeline in `main.py`, the DashScope comparison scripts, and the CSV LLM-judge scripts.
+- `OPENROUTER_API_KEY`Required by `Experiments/Comparation/batch_run_openrouter_multimodal_eval.py`.
+- `ZHIPU_API_KEY`Required only if you keep `glm-4.6v` in the DashScope comparison model list.
+- `DEEPL_API_KEY`
   Required by the RAG experiment when English translation is enabled for semantic metrics.
 
 ### 3.2 Bundled Databases
@@ -103,13 +83,10 @@ The path is resolved relative to `evaluation/eval_db/` unless you provide an abs
 
 ## 4. Prepare the Datasets
 
-The datasets are **not distributed in this repository**. Users must download them separately and create the required folders manually.
+The AAV dataset are **not distributed in this repository**. You must download them separately and create the required folders manually.
 
-Google Drive download links to be added before release:
-
-- Main / validation set (`dataset`): `<ADD_GOOGLE_DRIVE_LINK_FOR_DATASET>`
-- Train subset for biomechanical threshold fitting (`dataset_choose`): `<ADD_GOOGLE_DRIVE_LINK_FOR_DATASET_CHOOSE>`
-- GT-keyword RAG subset (`dataset_ex`): `<ADD_GOOGLE_DRIVE_LINK_FOR_DATASET_EX>`
+- AAV dataset (`dataset`): `<https://drive.google.com/file/d/1Rb74A6DhKEqO6U0RDyA9SOpp0SFkamtZ/view?usp=sharing>`
+- Experiment subset (`dataset_ex`): `<https://drive.google.com/file/d/1pe6dhhKYyRASZK-sA1iN94AmeacUxN8k/view?usp=sharing>`
 
 ### 4.1 Minimum setup for `main.py`
 
@@ -137,29 +114,6 @@ For example, running `main.py` on `136.mp4` expects:
 - `dataset/video/136.mp4`
 - `dataset/txt/136.txt`
 - `dataset/csv/136.csv`
-
-### 4.2 Additional folders for full experiment reproduction
-
-Some experiments require extra dataset roots:
-
-```text
-SEMA/
-  dataset_choose/
-    csv/
-    keyframes/
-    txt/
-    video/
-  dataset_ex/
-    csv/
-    keywords/
-    txt/
-    video/
-```
-
-Use:
-
-- `dataset_choose/` for biomechanical threshold fitting in `Experiments/BIO_FEATURE_CAL/`
-- `dataset_ex/` for GT-keyword RAG evaluation in `Experiments/RAG/`
 
 ## 5. How to Run
 
@@ -357,8 +311,4 @@ In practice:
 
 ## 7. Citation
 
-If you use this repository, please cite our paper:
-
-- **A Modular Approach to Automated Archery Coaching for Action Quality Assessment and Feedback Generation Using Large Language Models**
-
-The BibTeX entry can be added here after publication.
+If you use this repository, please cite our paper (Citation information will be added once it becomes available).
